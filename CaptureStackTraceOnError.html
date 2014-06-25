@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Handling front-end errors with Stack Trace </title>
+    <script type="text/javascript" src="https://rawgithub.com/stacktracejs/stacktrace.js/master/stacktrace.js"></script>
+
+</head>
+<body>
+<h1> Handling front-end errors with Stack Trace </h1>
+	<code> function foo() { 
+            var a = 1;
+            bar();
+        } <br/>
+        function bar() {
+            baz();
+        }
+    <br/>
+       function baz(){
+            var a = {};
+            a.result = 10;
+
+            Error.prototype.setCustomStackObject(printStackTrace().slice(4,7).join("\n")); <br/>
+           
+           	try{
+           		<p style="color:red">a.output[10]</p>
+           	}<br/>catch(e){
+				console.log("e.message, e.stack); 
+           	}
+           	 <p style="color:red">JSON.parse(a.result[10].value);</p>
+        }</code> <hr></hr>
+
+	<samp id="onError"></samp>
+</ol>
+
+</body>
+    <script type="text/javascript">
+	     Error.prototype.customStackObject = [];
+	     Error.prototype.getCustomStackObject = function(){
+	        return Error.prototype.customStackObject
+	     }
+
+	    Error.prototype.setCustomStackObject = function(customStackObject){
+	       Error.prototype.customStackObject = customStackObject;
+	    }
+
+    	consoleText = "";
+        (function(){
+            if(window.console && console.log){
+                var old = console.log;
+                console.log = function(){
+                	
+                	var i = 0;
+                	while(i < arguments.length){
+                		consoleText += "<br/>"+arguments[i++];
+                	}
+                    document.getElementById("onError").innerHTML = consoleText;
+                }
+            }
+        })();
+        // Only Chrome & Opera pass the error object.
+        window.onerror = function (message, file, line, col, e) {
+        	var customStackObject = Error.prototype.getCustomStackObject();
+        	console.log("\n");
+            if(e == undefined) { // Safari and FireFox
+            	var logText = "<b><u>Window.onError</u><br\>Message:</b> " +message+ "<br\><b> File: </b>"+file +"<br\><b> Line: </b>"+line;
+
+            	if(customStackObject)
+            		logText += "<br\>" + customStackObject;
+                console.log(logText);
+            }
+            else {
+            	var logText = "<b><u>Window.onError</u><br\>Message:</b> " +message+ "<br\><b>Stack Trace:</b> <br\>"+e.stack;
+
+            	if(customStackObject)
+            		logText += "<br\>" + customStackObject;
+                console.log(logText);     
+            }
+            return true;
+        };
+
+        function foo() {
+            var a = 1;
+            bar();
+        }
+        function bar() {
+            baz();
+        }
+        function baz(){
+            var a = {};
+            a.result = 10;
+
+            Error.prototype.setCustomStackObject("<br\><b><u>Start of CustomStack Object:<br\></b></u>"+printStackTrace().slice(4,7).join("\n"));
+           
+           	try{
+           		a.output[10]
+           	}catch(e){
+				console.log("<b><u>Try-Catch</u><br\>Message:</b> " +e.message, "<b>Stack Trace:</b> <br\>"+e.stack); 
+           	}
+           	 JSON.parse(a.result[10].value);
+        }
+        foo();
+    </script>
+</html>
